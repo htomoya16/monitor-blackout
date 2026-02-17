@@ -4,6 +4,7 @@ namespace MonitorBlackout.Overlay;
 
 public sealed class OverlayForm : Form
 {
+    // Overlay の生存期間と同期する OS オブジェクト。
     private readonly Mutex _instanceMutex;
     private readonly EventWaitHandle _closeEvent;
     private readonly RegisteredWaitHandle _closeSignalRegistration;
@@ -14,17 +15,21 @@ public sealed class OverlayForm : Form
         _instanceMutex = instanceMutex;
         _closeEvent = closeEvent;
 
+        // 対象モニタの bounds にピッタリ合わせる。
         StartPosition = FormStartPosition.Manual;
         Location = monitor.Bounds.Location;
         Size = monitor.Bounds.Size;
 
+        // 枠なし・黒背景・最前面で「黒幕」ウィンドウ化する。
         FormBorderStyle = FormBorderStyle.None;
         BackColor = Color.Black;
         TopMost = true;
         ShowInTaskbar = false;
 
+        // 全域クリックで即終了（詰み防止）。
         MouseDown += (_, _) => CloseOverlay();
 
+        // Toggle からの OFF シグナルを受けたら閉じる。
         _closeSignalRegistration = ThreadPool.RegisterWaitForSingleObject(
             _closeEvent,
             (_, _) => RequestCloseFromSignal(),
@@ -35,6 +40,7 @@ public sealed class OverlayForm : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        // 待機登録と同期オブジェクトを解放する。
         _closeSignalRegistration.Unregister(null);
         _closeEvent.Dispose();
 
@@ -44,7 +50,7 @@ public sealed class OverlayForm : Form
         }
         catch (ApplicationException)
         {
-            // Ignore if mutex ownership was already released.
+            // すでに所有権が解放済みなら無視する。
         }
 
         _instanceMutex.Dispose();
@@ -53,6 +59,7 @@ public sealed class OverlayForm : Form
 
     private void RequestCloseFromSignal()
     {
+        // フォーム破棄中なら UI 呼び出しを行わない。
         if (!IsHandleCreated || IsDisposed)
         {
             return;
@@ -64,12 +71,13 @@ public sealed class OverlayForm : Form
         }
         catch (InvalidOperationException)
         {
-            // Ignore if form is closing while signal callback arrives.
+            // シグナル到着とフォーム終了が競合した場合は無視する。
         }
     }
 
     private void CloseOverlay()
     {
+        // 二重 Close を防ぐ。
         if (_isClosing)
         {
             return;

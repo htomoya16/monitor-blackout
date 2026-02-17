@@ -2,6 +2,7 @@ namespace MonitorBlackout.Common;
 
 public static class OverlayArguments
 {
+    // Overlay 起動引数から `--device <name>` を取り出す。
     public static string? ParseDeviceName(string[] args)
     {
         for (var i = 0; i < args.Length - 1; i++)

@@ -2,24 +2,30 @@ using System.Runtime.InteropServices;
 
 namespace MonitorBlackout.Common;
 
+// Monitor 判定に必要な Win32 API 宣言をまとめる。
 internal static class NativeMethods
 {
+    // EnumDisplayMonitors のコールバック型。
     internal delegate bool MonitorEnumProc(
         IntPtr hMonitor,
         IntPtr hdcMonitor,
         IntPtr lprcMonitor,
         IntPtr dwData);
 
+    // 現在フォアグラウンド（アクティブ）なウィンドウを取得する。
     [DllImport("user32.dll")]
     internal static extern IntPtr GetForegroundWindow();
 
+    // ウィンドウハンドルが属するモニタハンドルを取得する。
     [DllImport("user32.dll")]
     internal static extern IntPtr MonitorFromWindow(IntPtr hWnd, uint dwFlags);
 
+    // モニタ情報（座標、デバイス名）を取得する。
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
 
+    // 全モニタを列挙する。
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool EnumDisplayMonitors(
@@ -28,6 +34,7 @@ internal static class NativeMethods
         MonitorEnumProc lpfnEnum,
         IntPtr dwData);
 
+    // Win32 の MONITORINFOEX 構造体マッピング。
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     internal struct MONITORINFOEX
     {
@@ -47,6 +54,7 @@ internal static class NativeMethods
             };
     }
 
+    // Win32 の RECT 構造体マッピング。
     [StructLayout(LayoutKind.Sequential)]
     internal struct RECT
     {
