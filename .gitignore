@@ -2,3 +2,4 @@ bin/
 obj/
 *.user
 publish/
+monitor-blackout-win-x64.zip
