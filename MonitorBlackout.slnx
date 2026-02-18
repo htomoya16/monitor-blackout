@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MonitorBlackout.Common/MonitorBlackout.Common.csproj" />
+    <Project Path="src/MonitorBlackout.Overlay/MonitorBlackout.Overlay.csproj" />
+    <Project Path="src/MonitorBlackout.Toggle/MonitorBlackout.Toggle.csproj" />
+  </Folder>
+</Solution>
