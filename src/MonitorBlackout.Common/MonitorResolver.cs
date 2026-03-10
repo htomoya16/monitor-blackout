@@ -4,23 +4,36 @@ namespace MonitorBlackout.Common;
 
 public static class MonitorResolver
 {
-    // モニタ取得失敗時に、最も近いモニタを返す Win32 フラグ。
     private const uint MonitorDefaultToNearest = 0x00000002;
 
-    // 現在アクティブなウィンドウから対象モニタを取得する。
+    // カーソル位置から対象モニタを取得する。
+    // 取得できない場合はフォアグラウンドウィンドウをフォールバックする。
+    // （カーソル優先のためショートカット起動でも期待モニタで動作しやすい）
     public static bool TryGetForegroundMonitor(out MonitorTarget monitor)
     {
+        monitor = default;
+
+        if (TryGetMonitorFromCursorPosition(out monitor))
+        {
+            return true;
+        }
+
         var foregroundWindow = NativeMethods.GetForegroundWindow();
         if (foregroundWindow == IntPtr.Zero)
         {
-            monitor = default;
             return false;
         }
 
-        return TryGetMonitorFromWindow(foregroundWindow, out monitor);
+        if (!TryGetMonitorFromWindow(foregroundWindow, out var foregroundMonitor))
+        {
+            return false;
+        }
+
+        monitor = foregroundMonitor;
+        return true;
     }
 
-    // デバイス名（例: \\.\DISPLAY2）から該当モニタを列挙して探す。
+    // デバイス名（例: \\.\\DISPLAY2）から該当モニタを列挙して探す。
     public static bool TryGetMonitorByDeviceName(string deviceName, out MonitorTarget monitor)
     {
         monitor = default;
@@ -51,7 +64,24 @@ public static class MonitorResolver
         return true;
     }
 
-    // ウィンドウハンドルから所属モニタを取得する。
+    private static bool TryGetMonitorFromCursorPosition(out MonitorTarget monitor)
+    {
+        monitor = default;
+
+        if (!NativeMethods.GetCursorPos(out var point))
+        {
+            return false;
+        }
+
+        var monitorHandle = NativeMethods.MonitorFromPoint(point, MonitorDefaultToNearest);
+        if (monitorHandle == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        return TryReadMonitorInfo(monitorHandle, out monitor);
+    }
+
     private static bool TryGetMonitorFromWindow(IntPtr windowHandle, out MonitorTarget monitor)
     {
         var monitorHandle = NativeMethods.MonitorFromWindow(windowHandle, MonitorDefaultToNearest);
