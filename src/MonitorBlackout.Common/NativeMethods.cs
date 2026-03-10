@@ -5,6 +5,7 @@ namespace MonitorBlackout.Common;
 // Monitor 判定に必要な Win32 API 宣言をまとめる。
 internal static class NativeMethods
 {
+
     // EnumDisplayMonitors のコールバック型。
     internal delegate bool MonitorEnumProc(
         IntPtr hMonitor,
@@ -19,6 +20,15 @@ internal static class NativeMethods
     // ウィンドウハンドルが属するモニタハンドルを取得する。
     [DllImport("user32.dll")]
     internal static extern IntPtr MonitorFromWindow(IntPtr hWnd, uint dwFlags);
+
+    // 画面上の座標からモニタハンドルを取得する。
+    [DllImport("user32.dll")]
+    internal static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+    // カーソル位置を取得する。
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetCursorPos(out POINT lpPoint);
 
     // モニタ情報（座標、デバイス名）を取得する。
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
@@ -62,5 +72,12 @@ internal static class NativeMethods
         internal int Top;
         internal int Right;
         internal int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct POINT
+    {
+        internal int X;
+        internal int Y;
     }
 }
