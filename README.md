@@ -7,7 +7,7 @@
 `Win+P` や物理電源 OFF のようにディスプレイ構成を変えずに使えるため、ウィンドウ再配置の手間を減らせるのが特徴です。
 
 ## デモ動画
-後で動画を追加予定です。
+https://github.com/user-attachments/assets/539c2ebc-e916-4bf5-a00d-086d700d4b50
 
 ## 使い方
 普段実行するのは `MonitorBlackout.Toggle.exe` だけです。  
